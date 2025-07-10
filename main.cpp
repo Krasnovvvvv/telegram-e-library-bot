@@ -1,8 +1,17 @@
 #include <tgbot/tgbot.h>
+#include <cstdlib>
 #include <iostream>
+#include <string>
 
 int main() {
-    TgBot::Bot bot("ВАШ_ТОКЕН_БОТА");
+
+    const char* token_cstr = std::getenv("BOT_TOKEN");
+    if (token_cstr == nullptr) {
+        std::cerr << "Error: BOT_TOKEN environment variable is not set." << std::endl;
+        return 1;
+    }
+    std::string token(token_cstr);
+    TgBot::Bot bot(token);
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
         bot.getApi().sendMessage(message->chat->id, "Привет!");
