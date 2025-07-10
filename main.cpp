@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <string>
+#include <fmt/format.h>
 
 int main() {
 
@@ -14,11 +15,12 @@ int main() {
     TgBot::Bot bot(token);
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
-        bot.getApi().sendMessage(message->chat->id, "Привет!");
+        bot.getApi().sendMessage(message->chat->id, fmt::format("Добро пожаловать в электронную библиотеку, {}!", message->from->firstName));
     });
 
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
-        std::cout << "The user wrote: " << message->text << std::endl;
+        TgBot::User::Ptr user = message->from;
+        std::cout << "The "<<user->firstName<<" wrote: " << message->text << std::endl;
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
