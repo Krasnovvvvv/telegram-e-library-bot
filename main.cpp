@@ -3,19 +3,51 @@
 #include <iostream>
 #include <string>
 #include <fmt/format.h>
+#include <sqlite3.h>
+#include <vector>
 
 int main() {
+
+    // Block of database initialization
+    sqlite3 *db;
+    std::vector<const char*> sql_scripts;
+    int rc = sqlite3_open("e_library_bot.db",&db);
+    if(rc) {
+        std::cerr<<fmt::format("Can't open database: {}", sqlite3_errmsg(db));
+        return 1;
+    }
+
+    const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY,"
+                                                                         " username TEXT);";
+
+    const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                                                         " title TEXT NOT NULL,"
+                                                                         " author TEXT NOT NULL,"
+                                                                         " topic TEXT NOT NULL,"
+                                                                         " file_path TEXT UNIQUE);";
+    sql_scripts.push_back(create_users_table_sql);
+    sql_scripts.push_back( create_books_table_sql);
+
+    for(const auto &script:sql_scripts)
+    {
+        if(sqlite3_exec(db,script, nullptr, nullptr,nullptr) != SQLITE_OK) {
+            std::cerr<<fmt::format("SQL error: {}", sqlite3_errmsg(db));
+        }
+
+    }
 
     const char* token_cstr = std::getenv("BOT_TOKEN");
     if (token_cstr == nullptr) {
         std::cerr << "Error: BOT_TOKEN environment variable is not set." << std::endl;
         return 1;
     }
+
     std::string token(token_cstr);
     TgBot::Bot bot(token);
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
-        bot.getApi().sendMessage(message->chat->id, fmt::format("Добро пожаловать в электронную библиотеку, {}!", message->from->firstName));
+        bot.getApi().sendMessage(message->chat->id, fmt::format("Добро пожаловать в электронную библиотеку, {}!",
+                                                                message->from->firstName));
     });
 
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
@@ -36,5 +68,7 @@ int main() {
     } catch (TgBot::TgException& e) {
         std::cerr << "error: " << e.what() << std::endl;
     }
+
+    sqlite3_close(db);
     return 0;
 }
