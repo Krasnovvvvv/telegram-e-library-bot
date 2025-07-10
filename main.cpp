@@ -18,7 +18,7 @@ int main() {
     });
 
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
-        std::cout << "Пользователь написал: " << message->text << std::endl;
+        std::cout << "The user wrote: " << message->text << std::endl;
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
@@ -26,7 +26,7 @@ int main() {
     });
 
     try {
-        std::cout << "Имя бота: " << bot.getApi().getMe()->username << std::endl;
+        std::cout << "Bot name: " << bot.getApi().getMe()->username << std::endl;
         TgBot::TgLongPoll longPoll(bot);
         while (true) {
             longPoll.start();
