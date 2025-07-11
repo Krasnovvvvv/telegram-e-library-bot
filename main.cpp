@@ -36,6 +36,8 @@ int main() {
 
     }
 
+    sql_scripts.clear();
+
     const char* token_cstr = std::getenv("BOT_TOKEN");
     if (token_cstr == nullptr) {
         std::cerr << "Error: BOT_TOKEN environment variable is not set." << std::endl;
@@ -46,9 +48,26 @@ int main() {
     TgBot::Bot bot(token);
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
-        bot.getApi().sendMessage(message->chat->id, fmt::format("Добро пожаловать в электронную библиотеку, {}!",
-                                                                message->from->firstName));
+        bot.getApi().sendMessage(
+                message->chat->id,
+                fmt::format(u8"*Добро пожаловать в электронную библиотеку, {}! \xF0\x9F\x98\x8A*\n\n"
+                            "Мои возможности:\n\n"
+                            "*/start* - начать работу\n"
+                            "*/catalog* - вывести текущий каталог книг\n"
+                            "*/find* - найти книгу. Это наиболее точный поиск, указываешь "
+                            "название книги и автора\n"
+                            "*/find_by_title* - найти книгу по названию. Выдает список всех книг с таким названием\n"
+                            "*/find_by_author* - найти книгу по автору. Выдает список всех книг этого автора\n"
+                            "*/find_by_topic* - найти книгу по теме. Выдает список наиболее подходящих книг по этой теме\n\n"
+                            "Все эти команды также доступны по кнопке *меню* слева снизу. Enjoy!",
+                            message->from->firstName),
+                false,
+                0,
+                nullptr,
+                "Markdown"
+        );
     });
+
 
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
         TgBot::User::Ptr user = message->from;
@@ -56,7 +75,12 @@ int main() {
         if (StringTools::startsWith(message->text, "/start")) {
             return;
         }
-        bot.getApi().sendMessage(message->chat->id, "Ваше сообщение: " + message->text);
+        bot.getApi().sendMessage(message->chat->id, u8"Кажется, я так еще не умею. Пожалуйста, введите одну из доступных команд."
+                                                    " Они доступны по кнопке *меню* слева снизу \xF0\x9F\x98\x89",
+                                                    false,
+                                                    0,
+                                                    nullptr,
+                                                    "Markdown");
     });
 
     try {
