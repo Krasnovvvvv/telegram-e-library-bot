@@ -72,9 +72,13 @@ int main() {
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
         TgBot::User::Ptr user = message->from;
         std::cout << "The "<<user->firstName<<" wrote: " << message->text << std::endl;
-        if (StringTools::startsWith(message->text, "/start")) {
-            return;
-        }
+        if (StringTools::startsWith(message->text, "/start") ||
+            StringTools::startsWith(message->text, "/catalog") ||
+            StringTools::startsWith(message->text, "/find") ||
+            StringTools::startsWith(message->text, "/find_by_title") ||
+            StringTools::startsWith(message->text, "/find_by_author") ||
+            StringTools::startsWith(message->text, "/find_by_topic")) return;
+
         bot.getApi().sendMessage(message->chat->id, u8"Кажется, я так еще не умею. Пожалуйста, введите одну из доступных команд."
                                                     " Они доступны по кнопке *меню* слева снизу \xF0\x9F\x98\x89",
                                                     false,
