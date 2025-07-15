@@ -5,6 +5,7 @@
 #include <fmt/format.h>
 #include <sqlite3.h>
 #include <vector>
+#include "YandexDiskClient.h"
 
 int main() {
 
@@ -38,14 +39,23 @@ int main() {
 
     sql_scripts.clear();
 
-    const char* token_cstr = std::getenv("BOT_TOKEN");
-    if (token_cstr == nullptr) {
+    const char* bot_token_cstr = std::getenv("BOT_TOKEN");
+    if (bot_token_cstr == nullptr) {
         std::cerr << "Error: BOT_TOKEN environment variable is not set." << std::endl;
         return 1;
     }
 
-    std::string token(token_cstr);
-    TgBot::Bot bot(token);
+    const char* disk_token_cstr = std::getenv("YADISK_TOKEN");
+    if (!disk_token_cstr) {
+        std::cerr << "Please set YADISK_TOKEN environment variable." << std::endl;
+        return 1;
+    }
+
+    std::string bot_token(bot_token_cstr);
+    std::string disk_token(disk_token_cstr);
+
+    TgBot::Bot bot(bot_token);
+    YandexDiskClient yandex(disk_token);
 
     bot.getEvents().onCommand("start", [&bot](TgBot::Message::Ptr message) {
         bot.getApi().sendMessage(
