@@ -10,6 +10,7 @@
 #include "YandexDiskClient.h"
 #include "StartCommand.h"
 #include "CatalogCommand.h"
+#include "FindCommand.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
@@ -54,6 +55,7 @@ bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
 void registerCommands() {
     commandRegistry["start"] = std::make_unique<StartCommand>();
     commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
+    commandRegistry["find"] = std::make_unique<FindCommand>(db);
     // commandRegistry["help"] = std::make_unique<HelpCommand>();
     // ... other commands
 }
