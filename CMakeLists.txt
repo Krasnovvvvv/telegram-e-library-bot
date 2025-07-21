@@ -12,7 +12,8 @@ set(YANDEXDISK_INCLUDE_DIR "" CACHE PATH "Path to YandexDiskClient headers")
 set(YANDEXDISK_LIB_DIR "" CACHE PATH "Path to YandexDiskClient library directory")
 
 add_executable(tg_bot_electronic_library main.cpp
-        Command.h)
+        ICommand.h
+        StartCommand.h)
 
 if(YANDEXDISK_INCLUDE_DIR)
     target_include_directories(tg_bot_electronic_library PRIVATE "${YANDEXDISK_INCLUDE_DIR}")
