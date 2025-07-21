@@ -28,7 +28,7 @@ public:
             ++count;
             std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
             std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-            catalogMsg << count << ". _" << title << "_ — " << author << "\n";
+            catalogMsg << count << ". _" << title << "_ — *" << author << "*\n";
         }
         sqlite3_finalize(stmt);
 

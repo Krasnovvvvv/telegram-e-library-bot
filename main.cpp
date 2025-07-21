@@ -14,6 +14,43 @@
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
 
+struct BookInfo {
+    std::string title;
+    std::string author;
+    std::string topic;
+    std::string file_path;
+};
+
+bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
+    const char* insert_sql =
+            "INSERT OR IGNORE INTO books (title, author, topic, file_path) VALUES (?, ?, ?, ?);";
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(db, insert_sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Ошибка подготовки запроса: " << sqlite3_errmsg(db) << std::endl;
+        return false;
+    }
+
+    bool all_success = true;
+    for (const auto& book : books) {
+        sqlite3_bind_text(stmt, 1, book.title.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, book.author.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 3, book.topic.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 4, book.file_path.c_str(), -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            std::cerr << "Ошибка вставки: " << sqlite3_errmsg(db) << std::endl;
+            all_success = false;
+        } else {
+            std::cout << "Книга \"" << book.title << "\" добавлена!" << std::endl;
+        }
+
+        sqlite3_reset(stmt); // сбрасываем stmt для следующей книги
+    }
+    sqlite3_finalize(stmt);
+    return all_success;
+}
+
 void registerCommands() {
     commandRegistry["start"] = std::make_unique<StartCommand>();
     commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
@@ -62,6 +99,18 @@ int main() {
     }
 
     sql_scripts.clear();
+
+    std::vector<BookInfo> books = {
+            { "Гарри Поттер и философский камень",
+              "Дж. К. Роулинг", "Фэнтези",
+              "/files/harry_potter_1.pdf" },
+            { "Гарри Поттер и Тайная комната",
+              "Дж. К. Роулинг",
+              "Фэнтези",
+              "/files/harry_potter_2.pdf" }
+    };
+
+    add_books(db, books);
 
     const char* bot_token_cstr = std::getenv("BOT_TOKEN");
     if (bot_token_cstr == nullptr) {
