@@ -27,7 +27,7 @@ bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(db, insert_sql, -1, &stmt, nullptr) != SQLITE_OK) {
-        std::cerr << "Ошибка подготовки запроса: " << sqlite3_errmsg(db) << std::endl;
+        std::cerr << "Request preparation error: " << sqlite3_errmsg(db) << std::endl;
         return false;
     }
 
@@ -39,13 +39,13 @@ bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
         sqlite3_bind_text(stmt, 4, book.file_path.c_str(), -1, SQLITE_TRANSIENT);
 
         if (sqlite3_step(stmt) != SQLITE_DONE) {
-            std::cerr << "Ошибка вставки: " << sqlite3_errmsg(db) << std::endl;
+            std::cerr << "Insertion error: " << sqlite3_errmsg(db) << std::endl;
             all_success = false;
         } else {
-            std::cout << "Книга \"" << book.title << "\" добавлена!" << std::endl;
+            std::cout << "The book \"" << book.title << "\" has been added!" << std::endl;
         }
 
-        sqlite3_reset(stmt); // сбрасываем stmt для следующей книги
+        sqlite3_reset(stmt);
     }
     sqlite3_finalize(stmt);
     return all_success;
