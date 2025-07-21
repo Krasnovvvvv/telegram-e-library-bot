@@ -9,11 +9,14 @@
 #include <memory>
 #include "YandexDiskClient.h"
 #include "StartCommand.h"
+#include "CatalogCommand.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
+sqlite3 *db;
 
 void registerCommands() {
     commandRegistry["start"] = std::make_unique<StartCommand>();
+    commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
     // commandRegistry["help"] = std::make_unique<HelpCommand>();
     // ... other commands
 }
@@ -32,7 +35,6 @@ void bindCommandHandlers(TgBot::Bot& bot) {
 int main() {
 
     // Block of database initialization
-    sqlite3 *db;
     std::vector<const char*> sql_scripts;
     int rc = sqlite3_open("e_library_bot.db",&db);
     if(rc) {
