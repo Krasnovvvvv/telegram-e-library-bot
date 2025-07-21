@@ -2,11 +2,11 @@
 #define TG_BOT_ELECTRONIC_LIBRARY_COMMAND_H
 
 
-#include <iostream>
+#include <tgbot/tgbot.h>
 
-class Command {
+class ICommand {
 public:
-    virtual ~Command() = default;
-    virtual void execute(const std::string& update) = 0;
+    virtual ~ICommand() = default;
+    virtual void execute(TgBot::Bot& bot, TgBot::Message::Ptr message) = 0;
 };
 #endif //TG_BOT_ELECTRONIC_LIBRARY_COMMAND_H
