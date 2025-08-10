@@ -11,6 +11,7 @@
 #include "StartCommand.h"
 #include "CatalogCommand.h"
 #include "FindCommand.h"
+#include "FindByTitleCommand.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
