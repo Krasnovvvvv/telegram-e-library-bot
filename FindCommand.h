@@ -30,7 +30,7 @@ public:
         session.author.clear();
         session.lastBotMsg = bot.getApi().sendMessage(
                 message->chat->id,
-                "Введите фамилию и инициалы автора книги (например, Роулинг Дж. К.):"
+                "Введите фамилию и инициалы автора книги (например, Дж. К. Роулинг):"
         )->messageId;
     }
 
