@@ -77,7 +77,8 @@ private:
             bot.getApi().sendMessage(message->chat->id, "Ошибка при запросе к базе данных.");
             return;
         }
-        sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_TRANSIENT);
+        std::string titlePattern = "%" + title + "%";
+        sqlite3_bind_text(stmt, 1, titlePattern.c_str(), -1, SQLITE_TRANSIENT);
 
         std::ostringstream resultMsg;
         int cnt = 0;

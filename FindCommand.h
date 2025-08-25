@@ -90,14 +90,16 @@ private:
                       const std::string& author,
                       const std::string& title) {
         const char* sql = "SELECT title, author, topic FROM books "
-                          "WHERE LOWER(author)=LOWER(?) AND LOWER(title)=LOWER(?) LIMIT 5;";
+                          "WHERE LOWER(author) LIKE LOWER(?) AND LOWER(title) LIKE LOWER(?) LIMIT 5;";
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
             bot.getApi().sendMessage(message->chat->id, "Ошибка при запросе к базе данных.");
             return;
         }
-        sqlite3_bind_text(stmt, 1, author.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 2, title.c_str(), -1, SQLITE_TRANSIENT);
+        std::string authorPattern = "%" + author + "%";
+        std::string titlePattern = "%" + title + "%";
+        sqlite3_bind_text(stmt, 1, authorPattern.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt, 2, titlePattern.c_str(), -1, SQLITE_TRANSIENT);
 
         std::ostringstream resultMsg;
         int cnt = 0;
