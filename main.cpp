@@ -15,6 +15,7 @@
 #include "FindByTitleCommand.h"
 #include "FindByAuthorCommand.h"
 #include "FindByTopicCommand.h"
+#include "BookListPaginator.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
@@ -56,13 +57,13 @@ bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
     return all_success;
 }
 
-void registerCommands() {
+void registerCommands(TgBot::Bot& bot, YandexDiskClient& yandex) {
     commandRegistry["start"] = std::make_unique<StartCommand>();
-    commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
-    commandRegistry["find"] = std::make_unique<FindCommand>(db);
-    commandRegistry["find_by_title"] = std::make_unique<FindByTitleCommand>(db);
-    commandRegistry["find_by_author"] = std::make_unique<FindByAuthorCommand>(db);
-    commandRegistry["find_by_topic"] = std::make_unique<FindByTopicCommand>(db);
+    commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db, bot, yandex);
+    commandRegistry["find"] = std::make_unique<FindCommand>(db, bot, yandex);
+    commandRegistry["find_by_title"] = std::make_unique<FindByTitleCommand>(db, bot, yandex);
+    commandRegistry["find_by_author"] = std::make_unique<FindByAuthorCommand>(db, bot, yandex);
+    commandRegistry["find_by_topic"] = std::make_unique<FindByTopicCommand>(db, bot, yandex);
 }
 
 void bindCommandHandlers(TgBot::Bot& bot) {
@@ -76,10 +77,10 @@ void bindCommandHandlers(TgBot::Bot& bot) {
 }
 
 int main() {
-    // init DB
-    int rc = sqlite3_open("e_library_bot.db",&db);
+    // инициализация базы
+    int rc = sqlite3_open("e_library_bot.db", &db);
     if(rc) {
-        std::cerr<<fmt::format("Can't open database: {}", sqlite3_errmsg(db));
+        std::cerr << fmt::format("Can't open database: {}", sqlite3_errmsg(db));
         return 1;
     }
     const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY, username TEXT);";
@@ -89,8 +90,8 @@ int main() {
     std::vector<const char*> sql_scripts = {create_users_table_sql, create_books_table_sql};
 
     for(const auto &script:sql_scripts) {
-        if(sqlite3_exec(db,script, nullptr, nullptr,nullptr) != SQLITE_OK) {
-            std::cerr<<fmt::format("SQL error: {}", sqlite3_errmsg(db));
+        if(sqlite3_exec(db, script, nullptr, nullptr,nullptr) != SQLITE_OK) {
+            std::cerr << fmt::format("SQL error: {}", sqlite3_errmsg(db));
         }
     }
 
@@ -101,21 +102,19 @@ int main() {
     add_books(db, books);
 
     const char* bot_token_cstr = std::getenv("BOT_TOKEN");
-    if (!bot_token_cstr) {
-        std::cerr << "Error: BOT_TOKEN env is not set" << std::endl;
-        return 1;
-    }
     const char* disk_token_cstr = std::getenv("YADISK_TOKEN");
-    if (!disk_token_cstr) {
-        std::cerr << "Please set YADISK_TOKEN env variable." << std::endl;
+    if (!bot_token_cstr || !disk_token_cstr) {
+        std::cerr << "Error: BOT_TOKEN or YADISK_TOKEN env variable not set" << std::endl;
         return 1;
     }
 
     TgBot::Bot bot(bot_token_cstr);
     YandexDiskClient yandex(disk_token_cstr);
 
-    registerCommands();
+    registerCommands(bot, yandex);
     bindCommandHandlers(bot);
+
+    BookListPaginator paginator(db, bot, yandex);
 
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
         if (!message->text.empty() && message->text[0] == '/')
@@ -128,7 +127,6 @@ int main() {
                 break;
             }
         }
-
         if (!handled) {
             bot.getApi().sendMessage(
                     message->chat->id,
@@ -136,6 +134,11 @@ int main() {
                     false, 0, nullptr, "Markdown"
             );
         }
+    });
+
+    bot.getEvents().onCallbackQuery([&](TgBot::CallbackQuery::Ptr query) {
+        // Обработка callback (пагинация и скачивание)
+        paginator.handleCallback(query);
     });
 
     try {

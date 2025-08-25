@@ -1,48 +1,29 @@
 #ifndef TG_BOT_ELECTRONIC_LIBRARY_CATALOGCOMMAND_H
 #define TG_BOT_ELECTRONIC_LIBRARY_CATALOGCOMMAND_H
 
+#pragma once
 
 #include "ICommand.h"
+#include "BookListPaginator.h"
+#include "YandexDiskClient.h"
+
 #include <sqlite3.h>
-#include <sstream>
 
 class CatalogCommand : public ICommand {
+public:
+    CatalogCommand(sqlite3* db_, TgBot::Bot& bot_, YandexDiskClient& yandex_)
+            : db(db_), bot(bot_), yandex(yandex_), paginator(db_, bot_, yandex_) {}
+
+    void execute(TgBot::Bot& /*bot*/, TgBot::Message::Ptr message) override {
+        paginator.setUserPage(message->from->id, 0);
+        paginator.sendPage(message->chat->id, message->from->id, "", {});
+    }
+
 private:
     sqlite3* db;
-public:
-    explicit CatalogCommand(sqlite3* db_) : db(db_) {}
-
-    void execute(TgBot::Bot& bot, TgBot::Message::Ptr message) override {
-        std::ostringstream catalogMsg;
-        catalogMsg << "*Каталог книг:*\n\n";
-
-        const char* sql = "SELECT title, author FROM books;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            bot.getApi().sendMessage(message->chat->id, "Ошибка при запросе к базе данных.");
-            return;
-        }
-
-        int count = 0;
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            ++count;
-            std::string title(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-            std::string author(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-            catalogMsg << count << ". _" << title << "_ — *" << author << "*\n";
-        }
-        sqlite3_finalize(stmt);
-
-        if (count == 0) {
-            catalogMsg.str(""); // очищаем
-            catalogMsg << "*Каталог пуст \xF0\x9F\x98\xA2*";
-        }
-
-        bot.getApi().sendMessage(
-                message->chat->id,
-                catalogMsg.str(),
-                false, 0, nullptr, "Markdown"
-        );
-    }
+    TgBot::Bot& bot;
+    YandexDiskClient& yandex;
+    BookListPaginator paginator;
 };
 
-#endif //TG_BOT_ELECTRONIC_LIBRARY_CATALOGCOMMAND_H
+#endif // TG_BOT_ELECTRONIC_LIBRARY_CATALOGCOMMAND_H

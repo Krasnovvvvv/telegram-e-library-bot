@@ -4,9 +4,10 @@
 #pragma once
 
 #include "SessionCommand.h"
+#include "BookListPaginator.h"
+#include "YandexDiskClient.h"
+
 #include <sqlite3.h>
-#include <sstream>
-#include <algorithm>
 
 enum class FindState {
     NONE,
@@ -18,16 +19,19 @@ struct FindSession {
     FindState state = FindState::NONE;
     std::string author;
     int lastBotMsg = 0;
+    int64_t userId = 0;
 };
 
 class FindCommand : public SessionCommand<FindSession> {
 public:
-    explicit FindCommand(sqlite3* db_) : db(db_) {}
+    FindCommand(sqlite3* db_, TgBot::Bot& bot_, YandexDiskClient& yandex_)
+            : db(db_), bot(bot_), yandex(yandex_), paginator(db_, bot_, yandex_) {}
 
     void execute(TgBot::Bot& bot, TgBot::Message::Ptr message) override {
         auto& session = this->sessions[message->from->id];
         session.state = FindState::WAIT_AUTHOR;
         session.author.clear();
+        session.userId = message->from->id;
         session.lastBotMsg = bot.getApi().sendMessage(
                 message->chat->id,
                 "Введите фамилию и инициалы автора книги (например, Дж. К. Роулинг):"
@@ -37,9 +41,8 @@ public:
 protected:
     bool handleSessionMessage(TgBot::Bot& bot, TgBot::Message::Ptr message, FindSession& session) override {
         safeDeleteMessage(bot, message->chat->id, message->messageId);
-        if (session.lastBotMsg != 0) {
+        if (session.lastBotMsg != 0)
             safeDeleteMessage(bot, message->chat->id, session.lastBotMsg);
-        }
 
         auto trim = [](const std::string& s) -> std::string {
             size_t start = s.find_first_not_of(" \n\r\t");
@@ -69,8 +72,11 @@ protected:
         if (session.state == FindState::WAIT_TITLE) {
             std::string input = trim(message->text);
             if (!input.empty()) {
-                doBookSearch(bot, message, session.author, input);
-                this->sessions.erase(message->from->id);
+                std::string whereClause = "author LIKE ? AND title LIKE ?";
+                std::vector<std::string> params = {"%" + session.author + "%", "%" + input + "%"};
+                paginator.setUserPage(session.userId, 0);
+                paginator.sendPage(message->chat->id, session.userId, whereClause, params);
+                this->sessions.erase(session.userId);
             } else {
                 session.lastBotMsg = bot.getApi().sendMessage(
                         message->chat->id,
@@ -79,63 +85,18 @@ protected:
             }
             return true;
         }
-
         return false;
     }
 
 private:
     sqlite3* db;
+    TgBot::Bot& bot;
+    YandexDiskClient& yandex;
+    BookListPaginator paginator;
 
-    static void safeDeleteMessage(TgBot::Bot& bot, int64_t chatId, int messageId) {
-        try {
-            bot.getApi().deleteMessage(chatId, messageId);
-        } catch (...) {
-            // Игнорируем ошибку удаления
-        }
-    }
-
-    void doBookSearch(TgBot::Bot& bot, TgBot::Message::Ptr message,
-                      const std::string& author, const std::string& title) {
-        static const char* sql =
-                "SELECT title, author, topic FROM books "
-                "WHERE author LIKE ? AND title LIKE ? LIMIT 5;";
-
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            bot.getApi().sendMessage(message->chat->id, "Ошибка при запросе к базе данных.");
-            return;
-        }
-
-        std::string authorPattern = "%" + author + "%";
-        std::string titlePattern = "%" + title + "%";
-
-        sqlite3_bind_text(stmt, 1, authorPattern.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt, 2, titlePattern.c_str(), -1, SQLITE_TRANSIENT);
-
-        std::ostringstream resultMsg;
-        int cnt = 0;
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            ++cnt;
-            std::string t(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)));
-            std::string a(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)));
-            std::string topic(reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)));
-            resultMsg << cnt << ". _" << t << "_ — *" << a << "* (Тема: _" << topic << "_)\n";
-        }
-        sqlite3_finalize(stmt);
-
-        if (cnt > 0) {
-            bot.getApi().sendMessage(message->chat->id,
-                                     resultMsg.str(),
-                                     false,
-                                     0,
-                                     nullptr,
-                                     "Markdown");
-        } else {
-            bot.getApi().sendMessage(
-                    message->chat->id,
-                    "Не найдено совпадений. Проверьте правильность введённых данных."
-            );
-        }
+    void safeDeleteMessage(TgBot::Bot& bot, int64_t chatId, int msgId) {
+        try { bot.getApi().deleteMessage(chatId, msgId); }
+        catch (...) {}
     }
 };
 

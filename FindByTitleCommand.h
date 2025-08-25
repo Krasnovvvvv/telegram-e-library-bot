@@ -14,12 +14,14 @@ struct FindTitleSession {
     FindTitleState state = FindTitleState::NONE;
     static constexpr FindTitleState waitState = FindTitleState::WAIT_TITLE;
     int lastBotMsg = 0;
+    int64_t userId = 0;
 };
 
 class FindByTitleCommand : public FindByFieldCommand<FindTitleSession> {
 public:
-    explicit FindByTitleCommand(sqlite3* db)
-            : FindByFieldCommand(db, "title", "Введите название книги (например, Занимательная физика):") {}
+    FindByTitleCommand(sqlite3* db, TgBot::Bot& bot, YandexDiskClient& yandex)
+            : FindByFieldCommand(db, bot, yandex, "title",
+                                 "Введите название книги (например, Занимательная физика):") {}
 };
 
 #endif // TG_BOT_FIND_BY_TITLECOMMAND_H

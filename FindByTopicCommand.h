@@ -14,12 +14,13 @@ struct FindTopicSession {
     FindTopicState state = FindTopicState::NONE;
     static constexpr FindTopicState waitState = FindTopicState::WAIT_TOPIC;
     int lastBotMsg = 0;
+    int64_t userId = 0;
 };
 
 class FindByTopicCommand : public FindByFieldCommand<FindTopicSession> {
 public:
-    explicit FindByTopicCommand(sqlite3* db)
-            : FindByFieldCommand(db, "topic", "Введите тему книги (например, Фэнтези):") {}
+    FindByTopicCommand(sqlite3* db, TgBot::Bot& bot, YandexDiskClient& yandex)
+            : FindByFieldCommand(db, bot, yandex, "topic", "Введите тему книги (например, Фэнтези):") {}
 };
 
 #endif // TG_BOT_FIND_BY_TOPICCOMMAND_H
