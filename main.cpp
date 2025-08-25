@@ -12,6 +12,7 @@
 #include "CatalogCommand.h"
 #include "FindCommand.h"
 #include "FindByTitleCommand.h"
+#include "ICommand.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
@@ -57,81 +58,55 @@ void registerCommands() {
     commandRegistry["start"] = std::make_unique<StartCommand>();
     commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
     commandRegistry["find"] = std::make_unique<FindCommand>(db);
-    // commandRegistry["help"] = std::make_unique<HelpCommand>();
-    // ... other commands
+    commandRegistry["find_by_title"] = std::make_unique<FindByTitleCommand>(db);
 }
 
 void bindCommandHandlers(TgBot::Bot& bot) {
     for (auto& [name, cmd] : commandRegistry) {
-
         bot.getEvents().onCommand(
                 name,
                 [&bot, handler = cmd.get()](TgBot::Message::Ptr message) {
-            handler->execute(bot, message);
-        });
+                    handler->execute(bot, message);
+                });
     }
 }
 
 int main() {
-
-    // Block of database initialization
-    std::vector<const char*> sql_scripts;
+    // init DB
     int rc = sqlite3_open("e_library_bot.db",&db);
     if(rc) {
         std::cerr<<fmt::format("Can't open database: {}", sqlite3_errmsg(db));
         return 1;
     }
+    const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY, username TEXT);";
+    const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, author TEXT NOT NULL, topic TEXT NOT NULL, file_path TEXT UNIQUE);";
+    std::vector<const char*> sql_scripts = {create_users_table_sql, create_books_table_sql};
 
-    const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY,"
-                                                                         " username TEXT);";
-
-    const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                                                         " title TEXT NOT NULL,"
-                                                                         " author TEXT NOT NULL,"
-                                                                         " topic TEXT NOT NULL,"
-                                                                         " file_path TEXT UNIQUE);";
-    sql_scripts.push_back(create_users_table_sql);
-    sql_scripts.push_back( create_books_table_sql);
-
-    for(const auto &script:sql_scripts)
-    {
+    for(const auto &script:sql_scripts) {
         if(sqlite3_exec(db,script, nullptr, nullptr,nullptr) != SQLITE_OK) {
             std::cerr<<fmt::format("SQL error: {}", sqlite3_errmsg(db));
         }
-
     }
 
-    sql_scripts.clear();
-
     std::vector<BookInfo> books = {
-            { "Гарри Поттер и философский камень",
-              "Дж. К. Роулинг", "Фэнтези",
-              "/files/harry_potter_1.pdf" },
-            { "Гарри Поттер и Тайная комната",
-              "Дж. К. Роулинг",
-              "Фэнтези",
-              "/files/harry_potter_2.pdf" }
+            { "Гарри Поттер и философский камень", "Дж. К. Роулинг", "Фэнтези", "/files/harry_potter_1.pdf" },
+            { "Гарри Поттер и Тайная комната", "Дж. К. Роулинг", "Фэнтези", "/files/harry_potter_2.pdf" }
     };
-
     add_books(db, books);
 
     const char* bot_token_cstr = std::getenv("BOT_TOKEN");
-    if (bot_token_cstr == nullptr) {
-        std::cerr << "Error: BOT_TOKEN environment variable is not set." << std::endl;
+    if (!bot_token_cstr) {
+        std::cerr << "Error: BOT_TOKEN env is not set" << std::endl;
         return 1;
     }
-
     const char* disk_token_cstr = std::getenv("YADISK_TOKEN");
     if (!disk_token_cstr) {
-        std::cerr << "Please set YADISK_TOKEN environment variable." << std::endl;
+        std::cerr << "Please set YADISK_TOKEN env variable." << std::endl;
         return 1;
     }
 
-    std::string bot_token(bot_token_cstr);
-    std::string disk_token(disk_token_cstr);
-
-    TgBot::Bot bot(bot_token);
-    YandexDiskClient yandex(disk_token);
+    TgBot::Bot bot(bot_token_cstr);
+    YandexDiskClient yandex(disk_token_cstr);
 
     registerCommands();
     bindCommandHandlers(bot);
@@ -139,12 +114,22 @@ int main() {
     bot.getEvents().onAnyMessage([&bot](TgBot::Message::Ptr message) {
         if (!message->text.empty() && message->text[0] == '/')
             return;
-        bot.getApi().sendMessage(
-                message->chat->id,
-                u8"Кажется, я так ещё не умею. Пожалуйста, введите одну из доступных команд. "
-                "Они доступны по кнопке *меню* слева снизу \xF0\x9F\x98\x89",
-                false, 0, nullptr, "Markdown"
-        );
+
+        bool handled = false;
+        for (auto& [name, cmd] : commandRegistry) {
+            if (cmd->handleMessage(bot, message)) {
+                handled = true;
+                break;
+            }
+        }
+
+        if (!handled) {
+            bot.getApi().sendMessage(
+                    message->chat->id,
+                    u8"Кажется, я так ещё не умею. Воспользуйтесь *меню* 😉",
+                    false, 0, nullptr, "Markdown"
+            );
+        }
     });
 
     try {

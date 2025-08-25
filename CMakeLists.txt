@@ -16,7 +16,8 @@ add_executable(tg_bot_electronic_library main.cpp
         StartCommand.h
         CatalogCommand.h
         FindCommand.h
-        FindByTitleCommand.h)
+        FindByTitleCommand.h
+        SessionCommand.h)
 
 if(YANDEXDISK_INCLUDE_DIR)
     target_include_directories(tg_bot_electronic_library PRIVATE "${YANDEXDISK_INCLUDE_DIR}")
