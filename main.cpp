@@ -8,11 +8,13 @@
 #include <map>
 #include <memory>
 #include "YandexDiskClient.h"
+#include "ICommand.h"
 #include "StartCommand.h"
 #include "CatalogCommand.h"
 #include "FindCommand.h"
 #include "FindByTitleCommand.h"
-#include "ICommand.h"
+#include "FindByAuthorCommand.h"
+#include "FindByTopicCommand.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
@@ -59,6 +61,8 @@ void registerCommands() {
     commandRegistry["catalog"] = std::make_unique<CatalogCommand>(db);
     commandRegistry["find"] = std::make_unique<FindCommand>(db);
     commandRegistry["find_by_title"] = std::make_unique<FindByTitleCommand>(db);
+    commandRegistry["find_by_author"] = std::make_unique<FindByAuthorCommand>(db);
+    commandRegistry["find_by_topic"] = std::make_unique<FindByTopicCommand>(db);
 }
 
 void bindCommandHandlers(TgBot::Bot& bot) {
