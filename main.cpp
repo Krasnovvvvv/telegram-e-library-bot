@@ -83,7 +83,9 @@ int main() {
         return 1;
     }
     const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY, username TEXT);";
-    const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT NOT NULL, author TEXT NOT NULL, topic TEXT NOT NULL, file_path TEXT UNIQUE);";
+    const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                                         " title TEXT NOT NULL, author TEXT NOT NULL, topic TEXT NOT NULL,"
+                                         " file_path TEXT UNIQUE);";
     std::vector<const char*> sql_scripts = {create_users_table_sql, create_books_table_sql};
 
     for(const auto &script:sql_scripts) {
