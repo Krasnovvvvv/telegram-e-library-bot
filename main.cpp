@@ -29,7 +29,7 @@ struct BookInfo {
 
 bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
     const char* insert_sql =
-            "INSERT OR IGNORE INTO books (title, author, topic, file_path) VALUES (?, ?, ?, ?);";
+            "INSERT OR IGNORE INTO books (title, author, topic, file_path, request_count) VALUES (?, ?, ?, ?, 0);";
     sqlite3_stmt* stmt;
 
     if (sqlite3_prepare_v2(db, insert_sql, -1, &stmt, nullptr) != SQLITE_OK) {
@@ -50,7 +50,6 @@ bool add_books(sqlite3* db, const std::vector<BookInfo>& books) {
         } else {
             std::cout << "The book \"" << book.title << "\" has been added!" << std::endl;
         }
-
         sqlite3_reset(stmt);
     }
     sqlite3_finalize(stmt);
@@ -77,17 +76,28 @@ void bindCommandHandlers(TgBot::Bot& bot) {
 }
 
 int main() {
-    // инициализация базы
     int rc = sqlite3_open("e_library_bot.db", &db);
     if(rc) {
         std::cerr << fmt::format("Can't open database: {}", sqlite3_errmsg(db));
         return 1;
     }
+
+    // Создание всех нужных таблиц, включая для рейтинга
     const char* create_users_table_sql = "CREATE TABLE IF NOT EXISTS users(tg_id INTEGER PRIMARY KEY, username TEXT);";
     const char* create_books_table_sql = "CREATE TABLE IF NOT EXISTS books(id INTEGER PRIMARY KEY AUTOINCREMENT,"
-                                         " title TEXT NOT NULL, author TEXT NOT NULL, topic TEXT NOT NULL,"
-                                         " file_path TEXT UNIQUE);";
-    std::vector<const char*> sql_scripts = {create_users_table_sql, create_books_table_sql};
+                                         " title TEXT NOT NULL, author TEXT NOT NULL,"
+                                         " topic TEXT NOT NULL,"
+                                         " file_path TEXT UNIQUE,"
+                                         " request_count INTEGER DEFAULT 0);";
+    const char* create_author_requests_table_sql = "CREATE TABLE IF NOT EXISTS author_requests(author TEXT PRIMARY KEY,"
+                                                   " request_count INTEGER DEFAULT 0);";
+    const char* create_topic_requests_table_sql = "CREATE TABLE IF NOT EXISTS topic_requests(topic TEXT PRIMARY KEY,"
+                                                  " request_count INTEGER DEFAULT 0);";
+
+    std::vector<const char*> sql_scripts = {
+            create_users_table_sql, create_books_table_sql,
+            create_author_requests_table_sql, create_topic_requests_table_sql
+    };
 
     for(const auto &script:sql_scripts) {
         if(sqlite3_exec(db, script, nullptr, nullptr,nullptr) != SQLITE_OK) {
@@ -127,6 +137,7 @@ int main() {
                 break;
             }
         }
+
         if (!handled) {
             bot.getApi().sendMessage(
                     message->chat->id,
@@ -137,7 +148,6 @@ int main() {
     });
 
     bot.getEvents().onCallbackQuery([&](TgBot::CallbackQuery::Ptr query) {
-        // Обработка callback (пагинация и скачивание)
         paginator.handleCallback(query);
     });
 

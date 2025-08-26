@@ -6,8 +6,7 @@
 #include "SessionCommand.h"
 #include "BookListPaginator.h"
 #include "YandexDiskClient.h"
-
-#include <sqlite3.h>
+#include <sstream>
 
 enum class FindState {
     NONE,
@@ -19,6 +18,7 @@ struct FindSession {
     FindState state = FindState::NONE;
     std::string author;
     int lastBotMsg = 0;
+    int topMsgId = 0;
     int64_t userId = 0;
 };
 
@@ -32,9 +32,26 @@ public:
         session.state = FindState::WAIT_AUTHOR;
         session.author.clear();
         session.userId = message->from->id;
+
+        auto topBooks = paginator.getTopBooks(10);
+        if (!topBooks.empty()) {
+            std::ostringstream oss;
+            oss << u8"📚 *ТОП-10 КНИГ:*\n";
+            int num = 1;
+            for (const auto& book : topBooks) {
+                oss << num++ << ". " << book.first << " — " << book.second << "\n";
+            }
+            session.topMsgId = bot.getApi().sendMessage(
+                    message->chat->id,
+                    oss.str(),
+                    false, 0, nullptr, "Markdown"
+                    )->messageId;
+        } else {
+            session.topMsgId = 0;
+        }
         session.lastBotMsg = bot.getApi().sendMessage(
                 message->chat->id,
-                "Введите фамилию и инициалы автора книги (например, Дж. К. Роулинг):"
+                "Введите фамилию и/или инициалы автора книги (например, Дж. К. Роулинг):"
         )->messageId;
     }
 
@@ -43,6 +60,8 @@ protected:
         safeDeleteMessage(bot, message->chat->id, message->messageId);
         if (session.lastBotMsg != 0)
             safeDeleteMessage(bot, message->chat->id, session.lastBotMsg);
+        if (session.topMsgId != 0)
+            safeDeleteMessage(bot, message->chat->id, session.topMsgId);
 
         auto trim = [](const std::string& s) -> std::string {
             size_t start = s.find_first_not_of(" \n\r\t");
@@ -63,7 +82,7 @@ protected:
             } else {
                 session.lastBotMsg = bot.getApi().sendMessage(
                         message->chat->id,
-                        "Некорректный ввод. Попробуйте ещё раз."
+                        "Некорректный ввод. Попробуйте ещё раз"
                 )->messageId;
             }
             return true;
@@ -72,6 +91,7 @@ protected:
         if (session.state == FindState::WAIT_TITLE) {
             std::string input = trim(message->text);
             if (!input.empty()) {
+                paginator.increaseBookRequestCount(input);
                 std::string whereClause = "author LIKE ? AND title LIKE ?";
                 std::vector<std::string> params = {"%" + session.author + "%", "%" + input + "%"};
                 paginator.setUserPage(session.userId, 0);
@@ -80,7 +100,7 @@ protected:
             } else {
                 session.lastBotMsg = bot.getApi().sendMessage(
                         message->chat->id,
-                        "Некорректное название. Попробуйте ещё раз."
+                        "Некорректное название. Попробуйте ещё раз"
                 )->messageId;
             }
             return true;

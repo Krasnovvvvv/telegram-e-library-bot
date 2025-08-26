@@ -187,6 +187,157 @@ public:
         }
     }
 
+    // Получить топ-10 популярных авторов
+    std::vector<std::string> getTopAuthors(int limit = 10) {
+        std::vector<std::string> authors;
+        const char* sql = "SELECT author FROM author_requests ORDER BY request_count DESC LIMIT ?;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Failed to prepare top authors query: " << sqlite3_errmsg(db) << std::endl;
+            return authors;
+        }
+        sqlite3_bind_int(stmt, 1, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* text = sqlite3_column_text(stmt, 0);
+            if (text)
+                authors.emplace_back(reinterpret_cast<const char*>(text));
+        }
+        sqlite3_finalize(stmt);
+        return authors;
+    }
+
+    // Получить топ-10 популярных тем
+    std::vector<std::string> getTopTopics(int limit = 10) {
+        std::vector<std::string> topics;
+        const char* sql = "SELECT topic FROM topic_requests ORDER BY request_count DESC LIMIT ?;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Failed to prepare top topics query: " << sqlite3_errmsg(db) << std::endl;
+            return topics;
+        }
+        sqlite3_bind_int(stmt, 1, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* text = sqlite3_column_text(stmt, 0);
+            if (text)
+                topics.emplace_back(reinterpret_cast<const char*>(text));
+        }
+        sqlite3_finalize(stmt);
+        return topics;
+    }
+
+    // Получить топ-10 популярных книг
+    std::vector<std::pair<std::string, std::string>> getTopBooks(int limit = 10) {
+        std::vector<std::pair<std::string, std::string>> books;
+        const char* sql = "SELECT title, author FROM books ORDER BY request_count DESC LIMIT ?;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Failed to prepare top books query: " << sqlite3_errmsg(db) << std::endl;
+            return books;
+        }
+        sqlite3_bind_int(stmt, 1, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* t = sqlite3_column_text(stmt, 0);
+            const unsigned char* a = sqlite3_column_text(stmt, 1);
+            if (t && a)
+                books.emplace_back(reinterpret_cast<const char*>(t), reinterpret_cast<const char*>(a));
+        }
+        sqlite3_finalize(stmt);
+        return books;
+    }
+
+    // Увеличить счётчик запросов к автору
+    void increaseAuthorRequestCount(const std::string& author) {
+        const char* sql = "INSERT INTO author_requests (author, request_count) VALUES (?, 1) "
+                          "ON CONFLICT(author) DO UPDATE SET request_count=request_count+1;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, author.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to update author_requests: " << sqlite3_errmsg(db) << std::endl;
+            }
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    // Увеличить счётчик запросов к теме
+    void increaseTopicRequestCount(const std::string& topic) {
+        const char* sql = "INSERT INTO topic_requests (topic, request_count) VALUES (?, 1) "
+                          "ON CONFLICT(topic) DO UPDATE SET request_count=request_count+1;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, topic.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to update topic_requests: " << sqlite3_errmsg(db) << std::endl;
+            }
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    // Увеличить счётчик запросов конкретной книги по названию
+    void increaseBookRequestCount(const std::string& title) {
+        const char* sql = "UPDATE books SET request_count = request_count + 1 WHERE title = ?;";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_TRANSIENT);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to update book request count: " << sqlite3_errmsg(db) << std::endl;
+            }
+        }
+        sqlite3_finalize(stmt);
+    }
+
+    std::vector<std::string> findMatchingAuthors(const std::string& userInput) {
+        std::vector<std::string> authors;
+        std::string pattern = "%" + userInput + "%";
+        const char* sql = "SELECT DISTINCT author FROM books WHERE author LIKE ?";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, pattern.c_str(), -1, SQLITE_TRANSIENT);
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                const unsigned char* str = sqlite3_column_text(stmt, 0);
+                if (str) authors.emplace_back(reinterpret_cast<const char*>(str));
+            }
+        }
+        sqlite3_finalize(stmt);
+        return authors;
+    }
+
+    std::vector<std::string> findMatchingTopics(const std::string& userInput) {
+        std::vector<std::string> topics;
+        std::string pattern = "%" + userInput + "%";
+        const char* sql = "SELECT DISTINCT topic FROM books WHERE topic LIKE ?";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, pattern.c_str(), -1, SQLITE_TRANSIENT);
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                const unsigned char* str = sqlite3_column_text(stmt, 0);
+                if (str) topics.emplace_back(reinterpret_cast<const char*>(str));
+            }
+        }
+        sqlite3_finalize(stmt);
+        return topics;
+    }
+
+    std::vector<std::pair<std::string, std::string>> findMatchingTitlesAuthors(const std::string& author, const std::string& title) {
+        std::vector<std::pair<std::string, std::string>> books;
+        std::string pattern1 = "%" + author + "%";
+        std::string pattern2 = "%" + title + "%";
+        const char* sql = "SELECT DISTINCT title, author FROM books WHERE author LIKE ? AND title LIKE ?";
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+            sqlite3_bind_text(stmt, 1, pattern1.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 2, pattern2.c_str(), -1, SQLITE_TRANSIENT);
+            while (sqlite3_step(stmt) == SQLITE_ROW) {
+                const unsigned char* titleStr = sqlite3_column_text(stmt, 0);
+                const unsigned char* authorStr = sqlite3_column_text(stmt, 1);
+                if (titleStr && authorStr)
+                    books.emplace_back(reinterpret_cast<const char*>(titleStr), reinterpret_cast<const char*>(authorStr));
+            }
+        }
+        sqlite3_finalize(stmt);
+        return books;
+    }
+
 private:
     void editPage(int64_t chatId, int messageId, int page,
                   const std::string &whereClause,
