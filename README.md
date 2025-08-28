@@ -120,6 +120,19 @@ try {
 
 ---
 
+## Bot сommands overview
+
+| Command             | Description                                                        |
+|---------------------|--------------------------------------------------------------------|
+| `/start`            | Start interacting with the bot                                     |
+| `/catalog`          | Display the current book catalog                                   |
+| `/find`             | Find a book by specifying both title and author (most precise)     |
+| `/find_by_title`    | Find books by title, returns all books with the given title        |
+| `/find_by_author`   | Find books by author, returns all books by the specified author    |
+| `/find_by_topic`    | Find books by topic/genre, returns all books in that subject area  |
+
+---
+
 ## Dependencies
 
 | Dependency                  | Purpose                                               | Documentation / Repo                                         |
