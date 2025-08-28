@@ -150,7 +150,7 @@ try {
 ## 🤝 Contribution
 
 Contributions, bug reports, and feature requests are welcome!  
-Please open issues or pull requests on the GitHub repository.
+Please open issues or pull requests on the GitHub repository
 
 ---
 
