@@ -1,4 +1,4 @@
-# Telegram electronic book library bot
+# 📚 Telegram electronic book library bot
 
 [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/Krasnovvvvv/telegram-e-library-bot?style=social)](https://github.com/Krasnovvvvv/telegram-e-library-bot/stargazers)
@@ -7,7 +7,7 @@ Digital library Telegram bot: search, browse, and access books via chat. Built w
 
 ---
 
-## About
+## ℹ️ About
 
 `telegram-e-library-bot` is an open-source bot for Telegram that allows:
 
@@ -23,7 +23,7 @@ Digital library Telegram bot: search, browse, and access books via chat. Built w
 
 ---
 
-## Project Structure
+## 🗂️ Project Structure
 ```
 telegram-e-library-bot/
 ├── include/                 # Public headers
@@ -36,9 +36,9 @@ telegram-e-library-bot/
 
 ---
 
-## Quick Start
+## 🚀 Quick Start
 
-### Prerequisites
+### 🛠️ Prerequisites
 
 - C++17 compatible compiler (GCC, Clang, MSVC)
 - CMake 3.28 or newer
@@ -56,7 +56,7 @@ telegram-e-library-bot/
 **The Yandex.Disk client must be built or installed as a static library before creating this project!**
 
 
-### Build Instructions
+### 🏗️ Build Instructions
 
 1. **Clone the Dependencies**
 
@@ -92,7 +92,7 @@ cmake --build .
 > Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
 
 
-### Personal settings
+### ⚙️ Personal settings
 
 1. **Adding books**
 
@@ -120,7 +120,7 @@ try {
 
 ---
 
-## Bot сommands overview
+## 🤖 Bot сommands overview
 
 | Command             | Description                                                        |
 |---------------------|--------------------------------------------------------------------|
@@ -133,7 +133,7 @@ try {
 
 ---
 
-## Dependencies
+## 📦 Dependencies
 
 | Dependency                  | Purpose                                               | Documentation / Repo                                         |
 |-----------------------------|------------------------------------------------------|--------------------------------------------------------------|
@@ -148,14 +148,14 @@ try {
 
 ---
 
-## Contribution
+## 🤝 Contribution
 
 Contributions, bug reports, and feature requests are welcome!  
 Please open issues or pull requests on the GitHub repository.
 
 ---
 
-## License
+## 📝 License
 
 This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE).
 
