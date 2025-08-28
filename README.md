@@ -88,7 +88,6 @@ cmake .. \
   -DYANDEXDISK_LIB_DIR=../../yandex-disk-cpp-client/build
 cmake --build .
 ```
-> **Note:**  
 > Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
 
 
