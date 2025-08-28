@@ -68,7 +68,7 @@ git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 
 ```
-2. **Build yandex-disk-cpp-client**
+2. **Build the Yandex.Disk C++ client library**
 
 ```sh
 cd yandex-disk-cpp-client
@@ -77,6 +77,19 @@ cmake ..
 cmake --build .
 cd ../..
 ```
+3. **Build the Telegram electronic library bot**
+
+```sh
+cd telegram-e-library-bot
+mkdir build && cd build
+cmake .. \
+  -DYANDEXDISK_INCLUDE_DIR=../../yandex-disk-cpp-client/include \
+  -DYANDEXDISK_LIB_DIR=../../yandex-disk-cpp-client/build
+cmake --build .
+```
+> **Note:**  
+> Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
+
 
 
 
