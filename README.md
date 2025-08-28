@@ -105,6 +105,9 @@ std::vector<BookInfo> books = {
 ```
 > Here you can add your books in the following format: `book title`, `author`, `book topic/genre`, `book path on your yandex.disk`
 
+2. **The local path for downloading books from yandex.disk**
+
+In the file `BookListPaginator.h` you can find such a block of code:
 ---
 
 ## Dependencies
