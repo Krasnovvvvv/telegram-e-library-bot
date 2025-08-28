@@ -68,6 +68,14 @@ git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 
 ```
+2. **Build yandex-disk-cpp-client**
+```sh
+cd yandex-disk-cpp-client
+mkdir build && cd build
+cmake ..
+cmake --build .
+cd ../..
+```
 
 
 
