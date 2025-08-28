@@ -55,6 +55,19 @@ telegram-e-library-bot/
 
 **The Yandex.Disk client must be built or installed as a static library before creating this project!**
 
+### Build Instructions
+
+1. **Clone the Dependencies**
+First, clone both the Yandex.Disk client and this project:
+```sh
+# Clone the Yandex.Disk C++ client library
+git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
+
+# Clone this project (Telegram electronic library bot)
+git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
+
+```
+
 
 
 
