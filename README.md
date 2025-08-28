@@ -46,7 +46,7 @@ telegram-e-library-bot/
 - ws2_32 — Windows sockets library (required on Windows only)
 - unofficial-sqlite3 — CMake package for SQLite3
 - fmt — Formatting library
-- yandex-disk-cpp-client — Modern C++ static client for Yandex.Disk REST API [![yandex-disk-cpp-client](https://img.shields.io/badge/yandex--disk--cpp--client-GitHub%20Repo-black?style=for-the-badge&logo=github)](https://github.com/Krasnovvvvv/yandex-disk-cpp-client)
+- yandex-disk-cpp-client — Modern C++ static client for Yandex.Disk REST API [![GitHub Repo](https://img.shields.io/badge/GitHub_Repo-222222?logo=github&logoColor=white&style=flat-square)](https://github.com/Krasnovvvvv/yandex-disk-cpp-client)
 - libcurl — Required by both the Yandex.Disk client and for direct network operations
 
 Most of these dependencies (with the exception of system libraries such as ws2_32 in Windows) can be installed using your operating system's package manager or using fetchContent/CPM in CMake. I strongly recommend using the vcpkg package manager to simplify the installation of dependencies.
