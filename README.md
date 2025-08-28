@@ -91,6 +91,18 @@ cmake --build .
 > **Note:**  
 > Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
 
+---
+
+## Dependencies
+
+| Dependency                  | Purpose                                               | Documentation / Repo                                         |
+|-----------------------------|------------------------------------------------------|--------------------------------------------------------------|
+| **TgBot**                   | C++ library to interact with the Telegram Bot API    | [GitHub](https://github.com/reo7sp/tgbot-cpp)                |
+| **ws2_32**                  | Windows sockets library (networking, Windows only)   | [Microsoft Docs](https://docs.microsoft.com/en-us/windows/win32/winsock/windows-sockets-start-page-2) |
+| **unofficial-sqlite3**      | CMake package for embedding SQLite3                  | [vcpkg](https://github.com/microsoft/vcpkg/tree/master/ports/sqlite3) |
+| **fmt**                     | Modern C++ formatting library                        | [GitHub](https://github.com/fmtlib/fmt)                      |
+| **yandex-disk-cpp-client**  | Modern C++ client for Yandex.Disk REST API           | [GitHub](https://github.com/Krasnovvvvv/yandex-disk-cpp-client) |
+| **libcurl**                 | Network requests (HTTP/HTTPS)                        | [GitHub](https://github.com/curl/curl) / [curl Docs](https://curl.se/libcurl/) |
 
 
 
