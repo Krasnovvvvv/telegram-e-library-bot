@@ -49,7 +49,7 @@ telegram-e-library-bot/
 - yandex-disk-cpp-client — Modern C++ static client for Yandex.Disk REST API  [![GitHub Repo](https://img.shields.io/badge/GitHub_Repo-222222?logo=github&logoColor=white&style=flat-square)](https://github.com/Krasnovvvvv/yandex-disk-cpp-client)
 - libcurl — Required by both the Yandex.Disk client and for direct network operations
 - Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
-- Environment variable `BOT_TOKEN` with your telegram bot token **(get it from `@BotFather`)**
+- Environment variable `BOT_TOKEN` with your telegram bot token **(get it from [`@BotFather`](https://t.me/BotFather))**
 
 *Most of these dependencies (with the exception of system libraries such as ws2_32 in Windows) can be installed using your operating system's package manager or using fetchContent/CPM in CMake. I strongly recommend using the vcpkg package manager to simplify the installation of dependencies.*
 
