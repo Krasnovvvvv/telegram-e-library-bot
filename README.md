@@ -51,9 +51,9 @@ telegram-e-library-bot/
 - Environment variable `YADISK_TOKEN` with your Yandex.Disk OAuth token **(full disk access)**
 - Environment variable `BOT_TOKEN` with your telegram bot token **(get it from [`@BotFather`](https://t.me/BotFather))**
 
-*Most of these dependencies (with the exception of system libraries such as ws2_32 in Windows) can be installed using your operating system's package manager or using fetchContent/CPM in CMake. I strongly recommend using the vcpkg package manager to simplify the installation of dependencies.*
+> *Most of these dependencies (with the exception of system libraries such as ws2_32 in Windows) can be installed using your operating system's package manager or using > fetchContent/CPM in CMake. I strongly recommend using the vcpkg package manager to simplify the installation of dependencies*
 
-**The Yandex.Disk client must be built or installed as a static library before creating this project!**
+> **The Yandex.Disk client must be built or installed as a static library before creating this project!**
 
 
 ### 🏗️ Build Instructions
@@ -92,7 +92,7 @@ cmake --build .
 > Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
 
 
-### ⚙️ Personal settings
+### ⚙️ Personal Settings
 
 1. **Adding books**
 
@@ -120,7 +120,7 @@ try {
 
 ---
 
-## 🤖 Bot сommands overview
+## 🤖 Bot Commands Overview
 
 | Command             | Description                                                        |
 |---------------------|--------------------------------------------------------------------|
