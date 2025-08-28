@@ -156,7 +156,7 @@ Please open issues or pull requests on the GitHub repository.
 
 ## 📝 License
 
-This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE).
+This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE)
 
 
 
