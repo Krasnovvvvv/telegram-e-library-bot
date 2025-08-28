@@ -69,6 +69,7 @@ git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 
 ```
 2. **Build yandex-disk-cpp-client**
+
 ```sh
 cd yandex-disk-cpp-client
 mkdir build && cd build
