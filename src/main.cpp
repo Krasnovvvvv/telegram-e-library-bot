@@ -8,14 +8,14 @@
 #include <map>
 #include <memory>
 #include "YandexDiskClient.h"
-#include "ICommand.h"
-#include "StartCommand.h"
-#include "CatalogCommand.h"
-#include "FindCommand.h"
-#include "FindByTitleCommand.h"
-#include "FindByAuthorCommand.h"
-#include "FindByTopicCommand.h"
-#include "BookListPaginator.h"
+#include "../include/ICommand.h"
+#include "../include/StartCommand.h"
+#include "../include/CatalogCommand.h"
+#include "../include/FindCommand.h"
+#include "../include/FindByTitleCommand.h"
+#include "../include/FindByAuthorCommand.h"
+#include "../include/FindByTopicCommand.h"
+#include "../include/BookListPaginator.h"
 
 std::map<std::string, std::unique_ptr<ICommand>> commandRegistry;
 sqlite3 *db;
