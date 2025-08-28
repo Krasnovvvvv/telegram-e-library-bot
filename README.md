@@ -91,6 +91,20 @@ cmake --build .
 > **Note:**  
 > Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
 
+
+### Personal settings
+
+1. **Adding books**
+
+In the file `main.cpp` you can find such a block of code:
+```cpp
+std::vector<BookInfo> books = {
+            { "Гарри Поттер и философский камень", "Дж. К. Роулинг", "Фэнтези", "/files/harry_potter_1.pdf" },
+            { "Гарри Поттер и Тайная комната", "Дж. К. Роулинг", "Фэнтези", "/files/harry_potter_2.pdf" }
+    };
+```
+> Here you can add your books in the following format: `book title`, `author`, `book topic/genre`, `book path on your yandex.disk`
+
 ---
 
 ## Dependencies
