@@ -104,6 +104,20 @@ cmake --build .
 | **yandex-disk-cpp-client**  | Modern C++ client for Yandex.Disk REST API           | [GitHub](https://github.com/Krasnovvvvv/yandex-disk-cpp-client) |
 | **libcurl**                 | Network requests (HTTP/HTTPS)                        | [GitHub](https://github.com/curl/curl) / [curl Docs](https://curl.se/libcurl/) |
 
+> These dependecies are automatically handled via CMake (assuming installed on your system or via package managers like vcpkg)
+
+---
+
+## Contribution
+
+Contributions, bug reports, and feature requests are welcome!  
+Please open issues or pull requests on the GitHub repository.
+
+---
+
+## License
+
+This project is licensed under the MIT License — see [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE).
 
 
 
