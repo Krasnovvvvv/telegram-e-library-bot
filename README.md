@@ -108,6 +108,16 @@ std::vector<BookInfo> books = {
 2. **The local path for downloading books from yandex.disk**
 
 In the file `BookListPaginator.h` you can find such a block of code:
+```cpp
+try {
+    std::filesystem::path dir("D:\\tmp");
+    std::filesystem::create_directories(dir);
+    std::filesystem::path localPath = dir / std::filesystem::path(path).filename();
+    ...
+}
+```
+> In the line `std::filesystem::path dir("D:\\tmp");` sets the local download path. Set your desired
+
 ---
 
 ## Dependencies
