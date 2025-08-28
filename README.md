@@ -1,4 +1,4 @@
-# 📚 Telegram electronic book library bot
+# 📚 Telegram Electronic Book Library Bot
 
 [![License](https://img.shields.io/github/license/Krasnovvvvv/telegram-e-library-bot)](LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/Krasnovvvvv/telegram-e-library-bot?style=social)](https://github.com/Krasnovvvvv/telegram-e-library-bot/stargazers)
@@ -65,7 +65,7 @@ First, clone both the Yandex.Disk client and this project:
 # Clone the Yandex.Disk C++ client library
 git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
 
-# Clone this project (Telegram electronic library bot)
+# Clone this project (Telegram electronic book library bot)
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 
 ```
