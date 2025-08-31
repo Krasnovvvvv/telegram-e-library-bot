@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <tgbot/tgbot.h>
+#include <fmt/format.h>
 #include <sstream>
 #include <map>
 #include <iostream>
@@ -90,7 +91,7 @@ public:
         oss << "*Список книг — страница " << (currentPage + 1) << "/" << totalPages << " :*\n\n";
         int num = currentPage * pageSize + 1;
         for(const auto &book: books)
-            oss << num++ << ". _" << book.title << "_ — *" << book.author << "* (Тема: _" << book.topic << "_)\n";
+            oss << num++ << ". *" << book.title << "* — _" << book.author << "_ (Тема: _" << book.topic << "_)\n";
 
         return oss.str();
     }
@@ -393,12 +394,16 @@ private:
         }
 
         try {
-            std::filesystem::path dir("D:\\tmp");
+            std::filesystem::path dir("C:\\tmp");
             std::filesystem::create_directories(dir);
+
+            if(isBiggerThan50MB(yandex.getResourceInfo(path)))
+                throw "BigFile";
 
             std::filesystem::path localPath = dir / std::filesystem::path(path).filename();
 
             if (!std::filesystem::exists(localPath)) {
+
                 bool ok = yandex.downloadFile(path, dir.string());
                 if (!ok) {
                     try { bot.getApi().sendMessage(chatId, "Ошибка загрузки книги"); } catch(...) {}
@@ -419,9 +424,40 @@ private:
 
             bot.getApi().sendDocument(chatId, inputFile);
 
-        } catch (const std::exception& e) {
-            try { bot.getApi().sendMessage(chatId, "Произошла ошибка во время отправки книги"); } catch(...) {}
-            std::cerr << "Ошибка при загрузке/отправке книги \"" << title << "\" автора \"" << author << "\": " << e.what() << std::endl;
+        }
+
+        catch(const char*) {
+
+            yandex.publish(path);
+            try { bot.getApi().sendMessage(chatId, fmt::format(u8"*Файл слиишком большой!* 😢"
+                                             "\n\n Поэтому держи ссылку для скачивания: \n\n {}",
+                                             yandex.getPublicDownloadLink(path)),
+                                     false,
+                                     0, nullptr, "Markdown");
+            } catch (...) {}
+        }
+
+        catch (const std::exception& e) {
+
+                try { bot.getApi().sendMessage(chatId, "Произошла ошибка во время отправки книги"); } catch (...) {}
+                std::cerr << "Ошибка при загрузке/отправке книги \"" << title << "\" автора \"" << author << "\": "
+                          << e.what() << std::endl;
+        }
+    }
+
+    bool isBiggerThan50MB(const std::string& infoStr) {
+        std::istringstream ss(infoStr);
+        std::string line;
+        while (std::getline(ss, line)) {
+
+            auto pos = line.find("Size:");
+            if (pos != std::string::npos) {
+                double value = 0.0;
+                std::string unit;
+                std::istringstream sizeStream(line.substr(pos + 5));
+                sizeStream >> value >> unit;
+                return (value > 50.0)&&(unit == "MB");
+            }
         }
     }
 
