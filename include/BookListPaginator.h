@@ -275,42 +275,30 @@ public:
         return getTopPairs("SELECT title, author FROM books ORDER BY request_count DESC LIMIT ?;", limit);
     }
 
-    void increaseAuthorRequestCount(const std::string& author) {
-        const char* sql = "INSERT INTO author_requests (author, request_count) VALUES (?, 1) "
-                          "ON CONFLICT(author) DO UPDATE SET request_count=request_count+1;";
+    void increaseCount(const char* sql, const std::string& request) {
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, author.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt, 1, request.c_str(), -1, SQLITE_TRANSIENT);
             if (sqlite3_step(stmt) != SQLITE_DONE) {
-                std::cerr << "Failed to update author_requests: " << sqlite3_errmsg(db) << std::endl;
+                std::cerr << "Failed to update requests: " << sqlite3_errmsg(db) << std::endl;
             }
         }
         sqlite3_finalize(stmt);
+
     }
 
-    void increaseTopicRequestCount(const std::string& topic) {
-        const char* sql = "INSERT INTO topic_requests (topic, request_count) VALUES (?, 1) "
-                          "ON CONFLICT(topic) DO UPDATE SET request_count=request_count+1;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, topic.c_str(), -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(stmt) != SQLITE_DONE) {
-                std::cerr << "Failed to update topic_requests: " << sqlite3_errmsg(db) << std::endl;
+    void increaseAuthorRequestCount(const std::string& author) {
+        increaseCount("INSERT INTO author_requests (author, request_count) VALUES (?, 1) "
+                      "ON CONFLICT(author) DO UPDATE SET request_count=request_count+1;", author);
             }
-        }
-        sqlite3_finalize(stmt);
+
+    void increaseTopicRequestCount(const std::string& topic) {
+        increaseCount("INSERT INTO topic_requests (topic, request_count) VALUES (?, 1) "
+                      "ON CONFLICT(topic) DO UPDATE SET request_count=request_count+1;", topic);
     }
 
     void increaseBookRequestCount(const std::string& title) {
-        const char* sql = "UPDATE books SET request_count = request_count + 1 WHERE title = ?;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, title.c_str(), -1, SQLITE_TRANSIENT);
-            if (sqlite3_step(stmt) != SQLITE_DONE) {
-                std::cerr << "Failed to update book request count: " << sqlite3_errmsg(db) << std::endl;
-            }
-        }
-        sqlite3_finalize(stmt);
+        increaseCount("UPDATE books SET request_count = request_count + 1 WHERE title = ?;", title);
     }
 
     std::vector<std::string> findMatchingAuthors(const std::string& userInput) {
