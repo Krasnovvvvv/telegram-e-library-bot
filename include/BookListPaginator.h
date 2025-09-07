@@ -227,59 +227,52 @@ public:
         }
     }
 
+    std::vector<std::string> getTopStrings(const char* sql, int limit) {
+        std::vector<std::string> result;
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Failed to prepare top query: " << sqlite3_errmsg(db) << std::endl;
+            return result;
+        }
+        sqlite3_bind_int(stmt, 1, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* v = sqlite3_column_text(stmt, 0);
+            if (v) result.emplace_back(reinterpret_cast<const char*>(v));
+        }
+        sqlite3_finalize(stmt);
+        return result;
+    }
+
+    std::vector<std::pair<std::string, std::string>> getTopPairs(const char* sql, int limit) {
+        std::vector<std::pair<std::string, std::string>> result;
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+            std::cerr << "Failed to prepare top query: " << sqlite3_errmsg(db) << std::endl;
+            return result;
+        }
+        sqlite3_bind_int(stmt, 1, limit);
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            const unsigned char* v1 = sqlite3_column_text(stmt, 0);
+            const unsigned char* v2 = sqlite3_column_text(stmt, 1);
+            if (v1 && v2) result.emplace_back(
+                        std::make_pair(
+                                std::string(reinterpret_cast<const char*>(v1)),
+                                std::string(reinterpret_cast<const char*>(v2))
+                        )
+                );
+        }
+        sqlite3_finalize(stmt);
+        return result;
+    }
+
     std::vector<std::string> getTopAuthors(int limit = 10) {
-        std::vector<std::string> authors;
-        const char* sql = "SELECT author FROM author_requests ORDER BY request_count DESC LIMIT ?;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            std::cerr << "Failed to prepare top authors query: " << sqlite3_errmsg(db) << std::endl;
-            return authors;
-        }
-        sqlite3_bind_int(stmt, 1, limit);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            const unsigned char* text = sqlite3_column_text(stmt, 0);
-            if (text)
-                authors.emplace_back(reinterpret_cast<const char*>(text));
-        }
-        sqlite3_finalize(stmt);
-        return authors;
+        return getTopStrings("SELECT author FROM author_requests ORDER BY request_count DESC LIMIT ?;", limit);
     }
-
     std::vector<std::string> getTopTopics(int limit = 10) {
-        std::vector<std::string> topics;
-        const char* sql = "SELECT topic FROM topic_requests ORDER BY request_count DESC LIMIT ?;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            std::cerr << "Failed to prepare top topics query: " << sqlite3_errmsg(db) << std::endl;
-            return topics;
-        }
-        sqlite3_bind_int(stmt, 1, limit);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            const unsigned char* text = sqlite3_column_text(stmt, 0);
-            if (text)
-                topics.emplace_back(reinterpret_cast<const char*>(text));
-        }
-        sqlite3_finalize(stmt);
-        return topics;
+        return getTopStrings("SELECT topic FROM topic_requests ORDER BY request_count DESC LIMIT ?;", limit);
     }
-
     std::vector<std::pair<std::string, std::string>> getTopBooks(int limit = 10) {
-        std::vector<std::pair<std::string, std::string>> books;
-        const char* sql = "SELECT title, author FROM books ORDER BY request_count DESC LIMIT ?;";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            std::cerr << "Failed to prepare top books query: " << sqlite3_errmsg(db) << std::endl;
-            return books;
-        }
-        sqlite3_bind_int(stmt, 1, limit);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            const unsigned char* t = sqlite3_column_text(stmt, 0);
-            const unsigned char* a = sqlite3_column_text(stmt, 1);
-            if (t && a)
-                books.emplace_back(reinterpret_cast<const char*>(t), reinterpret_cast<const char*>(a));
-        }
-        sqlite3_finalize(stmt);
-        return books;
+        return getTopPairs("SELECT title, author FROM books ORDER BY request_count DESC LIMIT ?;", limit);
     }
 
     void increaseAuthorRequestCount(const std::string& author) {
