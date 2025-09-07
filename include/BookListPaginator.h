@@ -301,36 +301,27 @@ public:
         increaseCount("UPDATE books SET request_count = request_count + 1 WHERE title = ?;", title);
     }
 
-    std::vector<std::string> findMatchingAuthors(const std::string& userInput) {
-        std::vector<std::string> authors;
+    std::vector<std::string> findMatchingStrings(const char* sql, const std::string& userInput) {
+        std::vector<std::string> result;
         std::string pattern = "%" + userInput + "%";
-        const char* sql = "SELECT DISTINCT author FROM books WHERE author LIKE ?";
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
             sqlite3_bind_text(stmt, 1, pattern.c_str(), -1, SQLITE_TRANSIENT);
             while (sqlite3_step(stmt) == SQLITE_ROW) {
                 const unsigned char* str = sqlite3_column_text(stmt, 0);
-                if (str) authors.emplace_back(reinterpret_cast<const char*>(str));
+                if (str) result.emplace_back(reinterpret_cast<const char*>(str));
             }
         }
         sqlite3_finalize(stmt);
-        return authors;
+        return result;
+    }
+
+    std::vector<std::string> findMatchingAuthors(const std::string& userInput) {
+        return findMatchingStrings("SELECT DISTINCT author FROM books WHERE author LIKE ?", userInput);
     }
 
     std::vector<std::string> findMatchingTopics(const std::string& userInput) {
-        std::vector<std::string> topics;
-        std::string pattern = "%" + userInput + "%";
-        const char* sql = "SELECT DISTINCT topic FROM books WHERE topic LIKE ?";
-        sqlite3_stmt* stmt;
-        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-            sqlite3_bind_text(stmt, 1, pattern.c_str(), -1, SQLITE_TRANSIENT);
-            while (sqlite3_step(stmt) == SQLITE_ROW) {
-                const unsigned char* str = sqlite3_column_text(stmt, 0);
-                if (str) topics.emplace_back(reinterpret_cast<const char*>(str));
-            }
-        }
-        sqlite3_finalize(stmt);
-        return topics;
+        return findMatchingStrings("SELECT DISTINCT topic FROM books WHERE topic LIKE ?", userInput);
     }
 
     std::vector<std::pair<std::string, std::string>> findMatchingTitlesAuthors(const std::string& author, const std::string& title) {
