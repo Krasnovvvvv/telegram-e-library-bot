@@ -1,6 +1,7 @@
 {
   "name": "tg-bot-electronic-library",
   "version": "1.0.0",
+  "builtin-baseline": "6353ece09f6cebc34413ea04e69beab3fece73c2",
   "dependencies": [
     "tgbot-cpp",
     "unofficial-sqlite3",
