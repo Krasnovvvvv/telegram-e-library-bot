@@ -1,0 +1,11 @@
+{
+  "name": "tg-bot-electronic-library",
+  "version": "1.0.0",
+  "dependencies": [
+    "tgbot-cpp",
+    "unofficial-sqlite3",
+    "fmt",
+    "curl",
+    "yandex-disk-cpp-client"
+  ]
+}
