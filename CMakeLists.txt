@@ -7,9 +7,7 @@ find_package(tgbot-cpp CONFIG REQUIRED)
 find_package(unofficial-sqlite3 CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
-
-set(YANDEXDISK_INCLUDE_DIR "" CACHE PATH "Path to YandexDiskClient headers")
-set(YANDEXDISK_LIB_DIR "" CACHE PATH "Path to YandexDiskClient library directory")
+find_package(yandex-disk-cpp-client CONFIG REQUIRED)
 
 add_executable(tg_bot_electronic_library src/main.cpp
         include/ICommand.h
@@ -23,20 +21,11 @@ add_executable(tg_bot_electronic_library src/main.cpp
         include/FindByFieldCommand.h
         include/BookListPaginator.h)
 
-if(YANDEXDISK_INCLUDE_DIR)
-    target_include_directories(tg_bot_electronic_library PRIVATE "${YANDEXDISK_INCLUDE_DIR}")
-endif()
-if(YANDEXDISK_LIB_DIR)
-    target_link_directories(tg_bot_electronic_library PRIVATE "${YANDEXDISK_LIB_DIR}")
-endif()
-
 target_link_libraries(tg_bot_electronic_library PRIVATE
         TgBot
         ws2_32
         unofficial::sqlite3::sqlite3
         fmt::fmt
-        yandex_disk_client
         CURL::libcurl
+        yandex-disk-cpp-client::yandex-disk-cpp-client
 )
-
-
