@@ -35,6 +35,3 @@ jobs:
         if: runner.os == 'Linux'
         run: cmake --build build -- -j$(nproc)
 
-      - name: Build (macOS)
-        if: runner.os == 'macOS'
-        run: cmake --build build -- -j$(sysctl -n hw.logicalcpu)
