@@ -53,9 +53,6 @@ telegram-e-library-bot/
 
 > *Most of these dependencies (with the exception of system libraries such as ws2_32 in Windows) can be installed using your operating system's package manager or using fetchContent/CPM in CMake. I strongly recommend using the vcpkg package manager to simplify the installation of dependencies*
 
-> **The Yandex.Disk client must be built or installed as a static library before creating this project!**
-
-
 ### 🏗️ Build Instructions
 
 1. **Clone the Dependencies**
@@ -69,27 +66,14 @@ git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 
 ```
-2. **Build the Yandex.Disk C++ client library**
-
-```sh
-cd yandex-disk-cpp-client
-mkdir build && cd build
-cmake ..
-cmake --build .
-cd ../..
-```
-3. **Build the Telegram electronic library bot**
+2. **Build the Telegram electronic library bot**
 
 ```sh
 cd telegram-e-library-bot
 mkdir build && cd build
-cmake .. \
-  -DYANDEXDISK_INCLUDE_DIR=../../yandex-disk-cpp-client/include \
-  -DYANDEXDISK_LIB_DIR=../../yandex-disk-cpp-client/build
+cmake ..
 cmake --build .
 ```
-> Adjust the `YANDEXDISK_INCLUDE_DIR` and `YANDEXDISK_LIB_DIR` paths if your directory layout is different
-
 
 ### ⚙️ Personal Settings
 
