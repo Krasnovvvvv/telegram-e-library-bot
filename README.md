@@ -57,15 +57,12 @@ telegram-e-library-bot/
 
 1. **Clone the Dependencies**
 
-First, clone both the Yandex.Disk client and this project:
+First, clone this repo:
 ```sh
-# Clone the Yandex.Disk C++ client library
-git clone https://github.com/Krasnovvvvv/yandex-disk-cpp-client.git
-
 # Clone this project (Telegram electronic book library bot)
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
-
 ```
+
 2. **Build the Telegram electronic library bot**
 
 ```sh
