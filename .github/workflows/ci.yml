@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
 
@@ -25,7 +25,6 @@ jobs:
       - name: Configure CMake
         run: cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/vcpkg/scripts/buildsystems/vcpkg.cmake
 
-      # Platform-specific build steps (including ws2_32 for Windows)
       - name: Build (Windows)
         if: runner.os == 'Windows'
         run: cmake --build build
@@ -35,3 +34,6 @@ jobs:
         if: runner.os == 'Linux'
         run: cmake --build build -- -j$(nproc)
 
+      - name: Build (macOS)
+        if: runner.os == 'macOS'
+        run: cmake --build build -- -j$(sysctl -n hw.logicalcpu)
