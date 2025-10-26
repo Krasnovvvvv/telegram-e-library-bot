@@ -59,7 +59,7 @@ telegram-e-library-bot/
 
 First, clone this repo:
 ```sh
-# Clone this project (Telegram electronic book library bot)
+# Clone this repo (Telegram electronic book library bot)
 git clone https://github.com/Krasnovvvvv/telegram-e-library-bot.git
 ```
 
